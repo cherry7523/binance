@@ -71,7 +71,7 @@ position = {
     "type1h" : None,
     "type4h" : None,
     "type1w" : 'long',
-    "type15me" : 'long',
+    "type15me" : None,
     "amount" : 0,
     "high" : 0,
     "1hsoldtime" : 0,
@@ -138,8 +138,7 @@ while True:
     if (0 <= now.second <58) :
         df1h = get_ohlcv(symbol,'1h')
         MACD(df1h)
-        df4h = get_ohlcv(symbol,'4h')
-        MACD(df4h)
+
         df15me = get_ohlcv(symbol_eth,'15m')
         MACD(df15me)
         op_mode = True     #1시간4시간 단위 macd 계산하기 op모드 온
@@ -147,7 +146,10 @@ while True:
     if (0 <= now.second < 5) or (30 <= now.second < 35):
         df1w = get_ohlcv(symbol,'1w')
         MACD(df1w)
-        
+
+    if (5 <= now.second < 15) or (25 <= now.second < 35) or (45 <= now.second < 55):    
+        df4h = get_ohlcv(symbol,'4h')
+        MACD(df4h)
 
     if op_mode and (position['1hsoldtime'] <= 0):
         usdt = balance['total']['USDT']    
@@ -155,7 +157,7 @@ while True:
             amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
             buy_position(binance, symbol, amount1h, position)
             position['type1h'] = 'long'
-            position['1hsoldtime'] = 30
+            position['1hsoldtime'] = 50
             print('1h buy! ' , amount1h, cur_price)
 
         elif df1h['histodf'][-1] <= 0 and (position['type1h'] == 'long'):
@@ -171,7 +173,7 @@ while True:
             amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
             buy_position(binance, symbol, amount4h, position)
             position['type4h'] = 'long'
-            position['4hsoldtime'] = 80
+            position['4hsoldtime'] = 140
             print('4h buy! ' , amount4h, cur_price)
 
         elif df4h['histodf'][-1] <= 0 and (position['type4h'] == 'long'):
@@ -187,7 +189,7 @@ while True:
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
             buy_position(binance, symbol, amount1w, position)
             position['type1w'] = 'long'
-            position['1wsoldtime'] = 140  
+            position['1wsoldtime'] = 240  
             print('1w buy! ' , amount1w, cur_price)
 
         elif df1w['histodf'][-1] <= 0 and (position['type1w'] == 'long'):
@@ -205,7 +207,7 @@ while True:
             amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
             buy_position(binance, symbol_eth, amount15me, position)
             position['type15me'] = 'long'
-            position['15mesoldtime'] = 30
+            position['15mesoldtime'] = 50
             print('15me buy! ' , amount15me, cur_price)
 
         elif df15me['histodf'][-1] <= 0 and (position['type15me'] == 'long'):
