@@ -129,20 +129,18 @@ binance.set_leverage(leverage = leverage, symbol = symbol)  #레버리지설정
 while True:
 
     now = datetime.datetime.now()
-  
-    if (0 <= now.second <55) :
+    
+    if (0 <= now.second <58) :
         df1h = get_ohlcv(symbol,'1h')
         df4h = get_ohlcv(symbol,'4h')
         MACD(df1h)
         MACD(df4h)
-        df1w = get_ohlcv(symbol,'1w')
-        MACD(df1w)
         op_mode = True     #1시간4시간 단위 macd 계산하기 op모드 온
       
-    if now.hour == 9 and now.minute == 0 and (20 <= now.second < 30):
+    if (0 <= now.second < 5) or (30 <= now.second < 35):
         df1w = get_ohlcv(symbol,'1w')
         MACD(df1w)
-        time.sleep(10)
+        
 
     if op_mode and (position['1hsoldtime'] <= 0):
         usdt = balance['total']['USDT']    
@@ -150,6 +148,7 @@ while True:
             amount1h = cal_amount(usdt, cur_price, portion1h)
             buy_position(binance, symbol, amount1h, position)
             position['type1h'] = 'long'
+            position['1hsoldtime'] = 20
             print('1h buy! ' , amount1h, cur_price)
 
         elif df1h['histodf'][-1] <= 0 and (position['type1h'] == 'long'):
@@ -165,6 +164,7 @@ while True:
             amount4h = cal_amount(usdt, cur_price, portion4h)
             buy_position(binance, symbol, amount4h, position)
             position['type4h'] = 'long'
+            position['4hsoldtime'] = 80
             print('4h buy! ' , amount4h, cur_price)
 
         elif df4h['histodf'][-1] <= 0 and (position['type4h'] == 'long'):
@@ -180,6 +180,7 @@ while True:
             amount1w = cal_amount(usdt, cur_price, portion1w)
             buy_position(binance, symbol, amount1w, position)
             position['type1w'] = 'long'
+            position['1wsoldtime'] = 140  
             print('1w buy! ' , amount1w, cur_price)
 
         elif df1w['histodf'][-1] <= 0 and (position['type1w'] == 'long'):
