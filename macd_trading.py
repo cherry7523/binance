@@ -1,5 +1,5 @@
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import ccxt 
 import pprint
@@ -60,15 +60,15 @@ portion1h = 0.15
 portion4h = 0.2
 portion1w = 0.3
 
-symbol_eth = "ETH/USDT"
-leverage_eth = 5
+symbol_eth = "1000SHIB/USDT"
+leverage_eth = 7
 portion15me = 0.2
 portion1he = 0.1
 portion1we = 0.3
 
 position = {
     "type" : None,
-    "type1h" : None,
+    "type1h" : 'long',
     "type4h" : None,
     "type1w" : 'long',
     "type15me" : None,
@@ -102,6 +102,13 @@ def cal_amount(usdt_balance, cur_price, portion,leverage):
     #버림 계산 가우스 함수 floor
     return amount
 
+def cal_amount_2(usdt_balance, cur_price, portion,leverage):
+  
+    usdt_trade = usdt_balance* portion *leverage
+    amount = math.floor((usdt_trade * 1 ) /cur_price )
+    #버림 계산 가우스 함수 floor
+    return amount
+
 def buy_position(exchange, symbol, amount, position ):
     position['type']= 'long'
     position['amount'] = amount
@@ -130,7 +137,7 @@ print(lastcoin)
 
 binance.set_leverage(leverage = leverage, symbol = symbol) 
 binance.set_leverage(leverage = leverage_eth, symbol = symbol_eth) #레버리지설정
-
+ 
 while True:
 
     now = datetime.datetime.now()
@@ -157,14 +164,14 @@ while True:
             amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
             buy_position(binance, symbol, amount1h, position)
             position['type1h'] = 'long'
-            position['1hsoldtime'] = 50
+            position['1hsoldtime'] = 100
             print('1h buy! ' , amount1h, cur_price)
 
         elif df1h['histodf'][-1] <= 0 and (position['type1h'] == 'long'):
             amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
             sell_position(binance, symbol, amount1h, position)
             position['type1h'] = None
-            position['1hsoldtime'] = 100
+            position['1hsoldtime'] = 200
             print('1h sold! ' , amount1h, cur_price)
 
     if op_mode and (position['4hsoldtime'] <= 0):
@@ -173,14 +180,14 @@ while True:
             amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
             buy_position(binance, symbol, amount4h, position)
             position['type4h'] = 'long'
-            position['4hsoldtime'] = 140
+            position['4hsoldtime'] = 240
             print('4h buy! ' , amount4h, cur_price)
 
         elif df4h['histodf'][-1] <= 0 and (position['type4h'] == 'long'):
             amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
             sell_position(binance, symbol, amount4h, position)
             position['type4h'] = None
-            position['4hsoldtime'] = 200
+            position['4hsoldtime'] = 300
             print('4h sold! ' , amount4h, cur_price)
 
     if op_mode and (position['1wsoldtime'] <= 0):
@@ -196,7 +203,7 @@ while True:
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
             sell_position(binance, symbol, amount1w, position)
             position['type1w'] = None
-            position['1wsoldtime'] = 300    
+            position['1wsoldtime'] = 350    
             print('1w sold! ' , amount1w, cur_price)
 
     if op_mode and (position['15mesoldtime'] <= 0):
@@ -204,17 +211,17 @@ while True:
         coineth = binance.fetch_ticker(symbol=symbol_eth)
         cur_price = coineth['last']    
         if df15me['histodf'][-1] > 0 and (position['type15me'] == None):
-            amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
+            amount15me = cal_amount_2(usdt, cur_price, portion15me, leverage_eth)
             buy_position(binance, symbol_eth, amount15me, position)
             position['type15me'] = 'long'
-            position['15mesoldtime'] = 50
+            position['15mesoldtime'] = 120
             print('15me buy! ' , amount15me, cur_price)
 
         elif df15me['histodf'][-1] <= 0 and (position['type15me'] == 'long'):
-            amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
+            amount15me = cal_amount_2(usdt, cur_price, portion15me, leverage_eth)
             sell_position(binance, symbol_eth, amount15me, position)
             position['type15me'] = None
-            position['15mesoldtime'] = 70
+            position['15mesoldtime'] = 130
             print('15me sold! ' , amount15me, cur_price)
 
 

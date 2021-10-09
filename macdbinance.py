@@ -136,7 +136,7 @@ def macd_trading(df):
 
 # for ticker in ["TSLA", "AAPL","GOOG","MSFT", "AMZN", "MRNA"]:
 # for ticker in ["BTC/USDT","ETH/USDT", "SOL/USDT", "1000SHIB/USDT"]:
-for ticker in ["BTC/USDT","ETH/USDT"]:    
+for ticker in ["BTC/USDT","ETH/USDT","1000SHIB/USDT"]:    
     for timef in ["1m","5m","15m","30m","1h","4h","8h","1d","3d","1w","1M"]:
     # timef = "1w"
         df = get_ohlcv(ticker, timef)
