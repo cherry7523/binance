@@ -68,7 +68,7 @@ portion1we = 0.3
 
 position = {
     "type" : None,
-    "type1h" : 'long',
+    "type1h" : None,
     "type4h" : None,
     "type1w" : 'long',
     "type15me" : None,
