@@ -71,7 +71,7 @@ position = {
     "type1h" : None,
     "type4h" : 'long',
     "type1w" : 'long',
-    "type15me" : None,
+    "type15me" : 'long',
     "amount" : 0,
     "high" : 0,
     "1hsoldtime" : 0,
