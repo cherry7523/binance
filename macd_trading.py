@@ -55,7 +55,7 @@ def MACD(df):
 #각종 설정들
 symbols =["BTC/USDT","ETH/USDT"]
 symbol = "BTC/USDT"
-leverage = 7
+leverage = 10
 portion1h = 0.15
 portion4h = 0.25
 portion1w = 0.3
