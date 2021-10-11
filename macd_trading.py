@@ -57,10 +57,10 @@ symbols =["BTC/USDT","ETH/USDT"]
 symbol = "BTC/USDT"
 leverage = 7
 portion1h = 0.15
-portion4h = 0.2
+portion4h = 0.25
 portion1w = 0.3
 
-symbol_eth = "1000SHIB/USDT"
+symbol_eth = "ETH/USDT"
 leverage_eth = 7
 portion15me = 0.2
 portion1he = 0.1
@@ -69,7 +69,7 @@ portion1we = 0.3
 position = {
     "type" : None,
     "type1h" : None,
-    "type4h" : None,
+    "type4h" : 'long',
     "type1w" : 'long',
     "type15me" : None,
     "amount" : 0,
@@ -86,7 +86,7 @@ df1h = get_ohlcv(symbol,'1h')
 df4h = get_ohlcv(symbol,'4h')
 df1d = get_ohlcv(symbol,'1d')
 df1w = get_ohlcv(symbol,'1w')
-df15me = get_ohlcv(symbol_eth,'15m')
+df15me = get_ohlcv(symbol_eth,'4h')
 
 MACD(df1m)
 MACD(df1h)
@@ -146,8 +146,7 @@ while True:
         df1h = get_ohlcv(symbol,'1h')
         MACD(df1h)
 
-        df15me = get_ohlcv(symbol_eth,'15m')
-        MACD(df15me)
+
         op_mode = True     #1시간4시간 단위 macd 계산하기 op모드 온
       
     if (0 <= now.second < 5) or (30 <= now.second < 35):
@@ -157,8 +156,11 @@ while True:
     if (5 <= now.second < 15) or (25 <= now.second < 35) or (45 <= now.second < 55):    
         df4h = get_ohlcv(symbol,'4h')
         MACD(df4h)
+        df15me = get_ohlcv(symbol_eth,'4h')
+        MACD(df15me)
 
     if op_mode and (position['1hsoldtime'] <= 0):
+        balance = binance.fetch_balance(params={"type":"future"})
         usdt = balance['total']['USDT']    
         if df1h['histodf'][-1] > 0 and (position['type1h'] == None):
             amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
@@ -175,6 +177,7 @@ while True:
             print('1h sold! ' , amount1h, cur_price)
 
     if op_mode and (position['4hsoldtime'] <= 0):
+        balance = binance.fetch_balance(params={"type":"future"})
         usdt = balance['total']['USDT']    
         if df4h['histodf'][-1] > 0 and (position['type4h'] == None):
             amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
@@ -191,6 +194,7 @@ while True:
             print('4h sold! ' , amount4h, cur_price)
 
     if op_mode and (position['1wsoldtime'] <= 0):
+        balance = binance.fetch_balance(params={"type":"future"})
         usdt = balance['total']['USDT']    
         if df1w['histodf'][-1] > 0 and (position['type1w'] == None):
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
@@ -207,18 +211,19 @@ while True:
             print('1w sold! ' , amount1w, cur_price)
 
     if op_mode and (position['15mesoldtime'] <= 0):
+        balance = binance.fetch_balance(params={"type":"future"})
         usdt = balance['total']['USDT']
         coineth = binance.fetch_ticker(symbol=symbol_eth)
         cur_price = coineth['last']    
         if df15me['histodf'][-1] > 0 and (position['type15me'] == None):
-            amount15me = cal_amount_2(usdt, cur_price, portion15me, leverage_eth)
+            amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
             buy_position(binance, symbol_eth, amount15me, position)
             position['type15me'] = 'long'
             position['15mesoldtime'] = 120
             print('15me buy! ' , amount15me, cur_price)
 
         elif df15me['histodf'][-1] <= 0 and (position['type15me'] == 'long'):
-            amount15me = cal_amount_2(usdt, cur_price, portion15me, leverage_eth)
+            amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
             sell_position(binance, symbol_eth, amount15me, position)
             position['type15me'] = None
             position['15mesoldtime'] = 130
