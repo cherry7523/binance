@@ -5,12 +5,17 @@ import ccxt
 import pprint
 import time
 import datetime
-import pandas as pd
+from pandas import Series, DataFrame
 import binance
 
 import math
 
 from pandas.core.tools.datetimes import to_datetime
+
+kakao = Series([92600,92400,92100,94300,92300])
+print(kakao[0])
+
+
 
 # dfsym= pd.DataFrame(columns=['symbol','leverage','period', 'portion', 'type','maxcount','maxsoldtime', 'amount', 'high','low', 'count','soldtime','rehistodf' ],index= [1,2,3,4])
 
@@ -26,10 +31,10 @@ from pandas.core.tools.datetimes import to_datetime
 
 
 
-class Signals:
-    def __init__(self,df,lags):
-        self.df = df
-        pass
+# class Signals:
+#     def __init__(self,df,lags):
+#         self.df = df
+#         pass
 
 
 
