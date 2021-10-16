@@ -24,7 +24,7 @@ binance = ccxt.binance(config={
     }
 })
 
-
+ 
 def get_ohlcv(ticker,timef):
     # since = "2021-09-28"
     # since = int(pd.to_datetime(since).timestamp() *1000)  #since 인트값으로 변경하기
@@ -168,18 +168,18 @@ while True:
     if (0 <= now.second < 5) or (30 <= now.second < 35):
         df1w = get_ohlcv(symbol,'3d')
         MACD(df1w)
-        time.sleep(0.2)
+        time.sleep(0.8)
         df15me = get_ohlcv(symbol_eth,'3d')
         MACD(df15me)
-        time.sleep(0.2)
+        time.sleep(0.8)
 
     if (5 <= now.second < 15) or (20 <= now.second < 35) or (40<= now.second < 60):    
         df4h = get_ohlcv(symbol,'8h')
         MACD(df4h)
-        time.sleep(0.2)
+        time.sleep(0.8)
         df4hb = get_ohlcv(symbol_b,'8h')
         MACD(df4hb)
-        time.sleep(0.2)
+        time.sleep(0.8)
 
 
     # if op_mode and (position['1hsoldtime'] <= 0):
@@ -217,12 +217,12 @@ while True:
         usdt = balance['total']['USDT']    
         if df4h['histodf'][-1] > 0 and (position['type4h'] == None):
             position['4hcount'] =  position['4hcount'] + 1
-            if position['4hcount'] >= 120 :
+            if position['4hcount'] >= 80 :
                 amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
                 buy_position(binance, symbol, amount4h, position)
                 position['4hcount'] = 0
                 position['type4h'] = 'long'
-                position['4hsoldtime'] = 400
+                position['4hsoldtime'] = 200
                 print('4h buy! ' , amount4h, cur_price)
         elif df4h['histodf'][-1] <= 0 and (position['type4h'] == None):
             if position['4hcount'] >0 :
@@ -230,12 +230,12 @@ while True:
 
         elif df4h['histodf'][-1] <= 0 and (position['type4h'] == 'long'):
             position['4hcount'] =  position['4hcount'] -1 
-            if position['4hcount'] == -120 :
+            if position['4hcount'] == -80 :
                 amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
                 sell_position(binance, symbol, amount4h, position)
                 position['4hcount'] = 0
                 position['type4h'] = None
-                position['4hsoldtime'] = 500
+                position['4hsoldtime'] = 250
                 print('4h sold! ' , amount4h, cur_price)
 
         elif df4h['histodf'][-1] > 0 and (position['type4h'] == 'long'):
@@ -250,14 +250,14 @@ while True:
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
             buy_position(binance, symbol, amount1w, position)
             position['type1w'] = 'long'
-            position['1wsoldtime'] = 240  
+            position['1wsoldtime'] = 600  
             print('1w buy! ' , amount1w, cur_price)
 
         elif df1w['histodf'][-1] <= 0 and (position['type1w'] == 'long'):
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
             sell_position(binance, symbol, amount1w, position)
             position['type1w'] = None
-            position['1wsoldtime'] = 350    
+            position['1wsoldtime'] = 750    
             print('1w sold! ' , amount1w, cur_price)
 
     if op_mode and (position['15mesoldtime'] <= 0):
@@ -336,6 +336,8 @@ while True:
     coin = binance.fetch_ticker(symbol=symbol)
     cur_price = coin['last']
 
+
+
     print(now, cur_price, round(df1h['histodf'][-1],3),position['1hcount'],position['1hsoldtime'],round(df4h['histodf'][-1],3),position['4hcount'],position['4hsoldtime'],round(df1w['histodf'][-1],3),position['1wsoldtime'],round(df15me['histodf'][-1],6),position['15mecount'],position['15mesoldtime'],round(df4hb['histodf'][-1],6),position['4hbcount'],position['4hbsoldtime'])
     if (position['1hsoldtime'] > 0) :
         position['1hsoldtime'] = position['1hsoldtime'] - 1 
@@ -349,7 +351,7 @@ while True:
         position['4hbsoldtime'] = position['4hbsoldtime'] - 1
             
 
-    time.sleep(6.3)
+    time.sleep(4.3)
 
 
 
