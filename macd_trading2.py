@@ -32,7 +32,7 @@ def get_ohlcv(ticker,timef):
         symbol=ticker, 
         timeframe=timef, 
         since=None,         
-        limit=500)
+        limit=1000)
 
     df = pd.DataFrame(coin1m, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
@@ -52,196 +52,157 @@ def MACD(df):
         df.histodf.iloc[i] = df.histo.iloc[i] - df.histo.iloc[i-1]    
 
 
-#각종 설정들
-symbols =["BTC/USDT","ETH/USDT"]
-symbol = "BTC/USDT"
-leverage = 25
-portion1h = 0.1
-portion4h = 0.4
-portion1w = 0.4
+# dfs= pd.DataFrame(columns=['symbol','leverage','period', 'portion', 'type','maxcount','maxsoldtime', 'amount', 'high','low', 'count','soldtime','rehistodf' ])
 
-symbol_eth = "ETH/USDT"
-leverage_eth = 10
-portion15me = 0.2
-portion1he = 0.1
-portion1we = 0.3
+dfs = pd.read_excel(f"dfsym.xlsx")
 
+symbol = dfs.symbol[0]
+symbol_eth = dfs.symbol[3]
+print(symbol, symbol_eth)
 
-symbol_b = "BNB/USDT"
-leverage_b = 15
-portion4hb = 0.15
-portion1he = 0.1
-portion1we = 0.3
-position = {
-    "type" : None,
-    "type1h" : None,
-    "type4h" : 'long',
-    "type1w" : 'long',
-    "type15me" : 'long',
-    "type4hb" : None,
-    "amount" : 0,
-    "high" : 0,
-    "1hcount" : 0,
-    "4hcount" : 0,
-    "1wcount" : 0,
-    "15mecount" : 0,
-    "4hbcount" : 0,
-    "1hsoldtime" : 0,
-    "4hsoldtime" : 0,
-    "1wsoldtime" : 0,
-    "15mesoldtime" : 0,
-    "4hbsoldtime" : 0
-}
-#설정값
+df1 = get_ohlcv(dfs.symbol[0],dfs.period[0])
+df2 = get_ohlcv(dfs.symbol[1],dfs.period[1])
+df3 = get_ohlcv(dfs.symbol[2],dfs.period[2])
+df4 = get_ohlcv(dfs.symbol[3],dfs.period[3])
 
-df1m = get_ohlcv(symbol,'1m')
-df1h = get_ohlcv(symbol,'1h')
-df4h = get_ohlcv(symbol,'8h')
-df1d = get_ohlcv(symbol,'1d')
-df1w = get_ohlcv(symbol,'3d')
-df15me = get_ohlcv(symbol_eth,'3d')
-df4hb = get_ohlcv(symbol_b,'8h')
+MACD(df1)
+MACD(df2)
+MACD(df3)
+MACD(df4)
+print(df1)
 
-MACD(df1m)
-MACD(df1h)
-MACD(df4h)
-MACD(df1d)
-MACD(df1w)
-MACD(df15me)
-MACD(df4hb)
+# #각종 설정들
+# symbols =["BTC/USDT","ETH/USDT"]
+# symbol = "BTC/USDT"
+# leverage = 10
+# portion1h = 0.15
+# portion4h = 0.25
+# portion1w = 0.35
+
+# symbol_eth = "ETH/USDT"
+# leverage_eth = 7
+# portion15me = 0.2
+# portion1he = 0.1
+# portion1we = 0.3
+
+# position = {
+#     "type" : None,
+#     "type1h" : None,
+#     "type4h" : None,
+#     "type1w" : 'long',
+#     "type15me" : None,
+#     "amount" : 0,
+#     "high" : 0,
+#     "1hcount" : 0,
+#     "1hsoldtime" : 0,
+#     "4hsoldtime" : 0,
+#     "1wsoldtime" : 0,
+#     "15mesoldtime" : 0,
+#     "15mecount" : 0
+# }
+# #설정값
+
+# df1m = get_ohlcv(symbol,'1m')
+# df1 = get_ohlcv(symbol,dfs.time[0])
+# df4h = get_ohlcv(symbol,'4h')
+# df1d = get_ohlcv(symbol,'1d')
+# df1w = get_ohlcv(symbol,'1w')
+# df15me = get_ohlcv(symbol_eth,'2h')
 
 
 def cal_amount(usdt_balance, cur_price, portion,leverage):
-  
     usdt_trade = usdt_balance* portion *leverage
-    amount = math.floor((usdt_trade *1000) /cur_price )/1000
-    #버림 계산 가우스 함수 floor
+    amount = math.floor((usdt_trade *1000) /cur_price )/1000 #  0.001이하 버림 계산 가우스 함수 floor
     return amount
 
 def cal_amount_2(usdt_balance, cur_price, portion,leverage):
-  
     usdt_trade = usdt_balance* portion *leverage
-    amount = math.floor((usdt_trade * 10 ) /cur_price )/10
-    #버림 계산 가우스 함수 floor
+    amount = math.floor((usdt_trade * 1 ) /cur_price )  #1이하 버림 계산 가우스 함수 floor
     return amount
 
-def buy_position(exchange, symbol, amount, position ):
-    position['type']= 'long'
-    position['amount'] = amount
+def buy_position(exchange, symbol, amount, df ):
+    df['type'] = 1
+    df['amount'] = amount
     exchange.create_market_buy_order(symbol= symbol, amount= amount)
 
-def sell_position(exchange, symbol, amount, position ):
-    position['type']= 'short'
-    position['amount'] = amount
+def sell_position(exchange, symbol, amount, df ):
+    df['type']= -1
+    df['amount'] = amount
     exchange.create_market_sell_order(symbol= symbol, amount= amount)
 
 
 op_mode = False
 
-balance = binance.fetch_balance(params={"type":"future"})
-usdt = balance['total']['USDT']
-usedusdt = balance['used']['USDT']
+binance.set_leverage(leverage = dfs.leverage[0], symbol = dfs.symbol[0]) 
+binance.set_leverage(leverage = dfs.leverage[3], symbol = dfs.symbol[3]) #레버리지설정
 
-print(usdt)
-print(usedusdt)
+ 
 
-coin = binance.fetch_ticker(symbol=symbol)
-cur_price = coin['last']
-print(cur_price)
-lastcoin = [df1h['histodf'][-1],df4h['histodf'][-1],df1w['histodf'][-1]]
-print(lastcoin)
-
-binance.set_leverage(leverage = leverage, symbol = symbol) 
-binance.set_leverage(leverage = leverage_eth, symbol = symbol_eth) #레버리지설정
-binance.set_leverage(leverage = leverage_b, symbol = symbol_b)
 while True:
 
     now = datetime.datetime.now()
     
-    if (0 <= now.second <25) or (35<= now.second <55) :
-        # df1h = get_ohlcv(symbol,'1h')
-        # MACD(df1h)
-
-
+    if (8 <= now.second <25) or (35<= now.second <55) :
+        df1 = get_ohlcv(symbol,dfs.time[0])
+        MACD(df1)
         op_mode = True     #1시간4시간 단위 macd 계산하기 op모드 온
       
     if (0 <= now.second < 5) or (30 <= now.second < 35):
-        df1w = get_ohlcv(symbol,'3d')
+        df1w = get_ohlcv(symbol,'1w')
         MACD(df1w)
-        time.sleep(0.2)
-        df15me = get_ohlcv(symbol_eth,'3d')
-        MACD(df15me)
-        time.sleep(0.2)
 
-    if (5 <= now.second < 15) or (20 <= now.second < 35) or (40<= now.second < 60):    
-        df4h = get_ohlcv(symbol,'8h')
+    if (5 <= now.second < 15) or (25 <= now.second < 35) or (50<= now.second < 60):    
+        df4h = get_ohlcv(symbol,'4h')
         MACD(df4h)
-        time.sleep(0.2)
-        df4hb = get_ohlcv(symbol_b,'8h')
-        MACD(df4hb)
-        time.sleep(0.2)
+        df15me = get_ohlcv(symbol_eth,'2h')
+        MACD(df15me)
 
-
-    # if op_mode and (position['1hsoldtime'] <= 0):
-    #     balance = binance.fetch_balance(params={"type":"future"})
-    #     usdt = balance['total']['USDT']    
-    #     if df1h['histodf'][-1] > 0 and (position['type1h'] == None):
-    #         position['1hcount'] =  position['1hcount'] + 1
-    #         if position['1hcount'] >= 40 :
-    #             amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
-    #             buy_position(binance, symbol, amount1h, position)
-    #             position['1hcount'] = 0
-    #             position['type1h'] = 'long'
-    #             position['1hsoldtime'] = 120
-    #             print('1h buy! ' , amount1h, cur_price)
-    #     elif df1h['histodf'][-1] <= 0 and (position['type1h'] == None):
-    #         if position['1hcount'] >0 :
-    #             position['1hcount'] =  position['1hcount'] - 1
-
-
-    #     elif df1h['histodf'][-1] <= 0 and (position['type1h'] == 'long'):
-    #         position['1hcount'] =  position['1hcount'] -1 
-    #         if position['1hcount'] == -40 :
-    #             amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
-    #             sell_position(binance, symbol, amount1h, position)
-    #             position['1hcount'] = 0
-    #             position['type1h'] = None
-    #             position['1hsoldtime'] = 150
-    #             print('1h sold! ' , amount1h, cur_price)
-    #     elif df1h['histodf'][-1] > 0 and (position['type1h'] == 'long'):
-    #         if position['1hcount'] < 0 :
-    #             position['1hcount'] =  position['1hcount'] + 1
-
-    if op_mode and (position['4hsoldtime'] <= 0):
+    if op_mode and (dfs['soldtime'][0] <= 0):
         balance = binance.fetch_balance(params={"type":"future"})
         usdt = balance['total']['USDT']    
-        if df4h['histodf'][-1] > 0 and (position['type4h'] == None):
-            position['4hcount'] =  position['4hcount'] + 1
-            if position['4hcount'] >= 120 :
-                amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
-                buy_position(binance, symbol, amount4h, position)
-                position['4hcount'] = 0
-                position['type4h'] = 'long'
-                position['4hsoldtime'] = 400
-                print('4h buy! ' , amount4h, cur_price)
-        elif df4h['histodf'][-1] <= 0 and (position['type4h'] == None):
-            if position['4hcount'] >0 :
-                position['4hcount'] =  position['4hcount'] - 1
+        if df1['histodf'][-1] > 0 and (dfs['type1h'] == None):
+            dfs['count'][0] =  dfs['count'][0] + 1
+            if dfs['count'][0] >= dfs['maxcount'][0] :
+                amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
+                buy_position(binance, symbol, amount1h, position)
+                position['count'] = 0
+                position['type1h'] = 1
+                position['soldtime'] = 120
+                print('1h buy! ' , amount1h, cur_price)
+        elif df1['histodf'][-1] <= 0 and (position['type1h'] == None):
+            if position['count'] >0 :
+                position['count'] =  position['count'] - 1
 
-        elif df4h['histodf'][-1] <= 0 and (position['type4h'] == 'long'):
-            position['4hcount'] =  position['4hcount'] -1 
-            if position['4hcount'] == -120 :
-                amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
-                sell_position(binance, symbol, amount4h, position)
-                position['4hcount'] = 0
-                position['type4h'] = None
-                position['4hsoldtime'] = 500
-                print('4h sold! ' , amount4h, cur_price)
 
-        elif df4h['histodf'][-1] > 0 and (position['type4h'] == 'long'):
-            if position['4hcount'] < 0 :
-                position['4hcount'] =  position['4hcount'] + 1
+        elif df1['histodf'][-1] <= 0 and (position['type1h'] == 1):
+            position['count'] =  position['count'] -1 
+            if position['count'] == -30 :
+                amount1h = cal_amount(usdt, cur_price, portion1h, leverage)
+                sell_position(binance, symbol, amount1h, position)
+                position['count'] = 0
+                position['type1h'] = None
+                position['soldtime'] = 150
+                print('1h sold! ' , amount1h, cur_price)
+        elif df1['histodf'][-1] > 0 and (position['type1h'] == 1):
+            if position['count'] < 0 :
+                position['count'] =  position['count'] + 1
 
+    # if op_mode and (position['4hsoldtime'] <= 0):
+    #     balance = binance.fetch_balance(params={"type":"future"})
+    #     usdt = balance['total']['USDT']    
+    #     if df4h['histodf'][-1] > 0 and (position['type4h'] == None):
+    #         amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
+    #         buy_position(binance, symbol, amount4h, position)
+    #         position['type4h'] = 1
+    #         position['4hsoldtime'] = 240
+    #         print('4h buy! ' , amount4h, cur_price)
+
+    #     elif df4h['histodf'][-1] <= 0 and (position['type4h'] == 1):
+    #         amount4h = cal_amount(usdt, cur_price, portion4h, leverage)
+    #         sell_position(binance, symbol, amount4h, position)
+    #         position['type4h'] = None
+    #         position['4hsoldtime'] = 300
+    #         print('4h sold! ' , amount4h, cur_price)
 
     if op_mode and (position['1wsoldtime'] <= 0):
         balance = binance.fetch_balance(params={"type":"future"})
@@ -249,11 +210,11 @@ while True:
         if df1w['histodf'][-1] > 0 and (position['type1w'] == None):
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
             buy_position(binance, symbol, amount1w, position)
-            position['type1w'] = 'long'
+            position['type1w'] = 1
             position['1wsoldtime'] = 240  
             print('1w buy! ' , amount1w, cur_price)
 
-        elif df1w['histodf'][-1] <= 0 and (position['type1w'] == 'long'):
+        elif df1w['histodf'][-1] <= 0 and (position['type1w'] == 1):
             amount1w = cal_amount(usdt, cur_price, portion1w, leverage)
             sell_position(binance, symbol, amount1w, position)
             position['type1w'] = None
@@ -267,11 +228,11 @@ while True:
         cur_price = coineth['last']    
         if df15me['histodf'][-1] > 0 and (position['type15me'] == None):
             position['15mecount'] =  position['15mecount'] + 1
-            if position['15mecount'] >= 50 :               
+            if position['15mecount'] >= 30 :               
                 amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
                 buy_position(binance, symbol_eth, amount15me, position)
                 position['15mecount'] = 0
-                position['type15me'] = 'long'
+                position['type15me'] = 1
                 position['15mesoldtime'] = 120
                 print('15me buy! ' , amount15me, cur_price)
 
@@ -281,9 +242,9 @@ while True:
 
 
 
-        elif df15me['histodf'][-1] <= 0 and (position['type15me'] == 'long'):
+        elif df15me['histodf'][-1] <= 0 and (position['type15me'] == 1):
             position['15mecount'] =  position['15mecount'] -1 
-            if position['15mecount'] == -60 :            
+            if position['15mecount'] == -30 :            
                 amount15me = cal_amount(usdt, cur_price, portion15me, leverage_eth)
                 sell_position(binance, symbol_eth, amount15me, position)
                 position['15mecount'] = 0
@@ -291,70 +252,52 @@ while True:
                 position['15mesoldtime'] = 130
                 print('15me sold! ' , amount15me, cur_price)
 
-        elif df15me['histodf'][-1] > 0 and (position['type15me'] == 'long'):
+        elif df15me['histodf'][-1] > 0 and (position['type15me'] == 1):
             if position['15mecount'] < 0 :
                 position['15mecount'] =  position['15mecount'] + 1
-
-
-    if op_mode and (position['4hbsoldtime'] <= 0):
-        balance = binance.fetch_balance(params={"type":"future"})
-        usdt = balance['total']['USDT']
-        coineth = binance.fetch_ticker(symbol=symbol_b)
-        cur_price = coineth['last']    
-        if df4hb['histodf'][-1] > 0 and (position['type4hb'] == None):
-            position['4hbcount'] =  position['4hbcount'] + 1
-            if position['4hbcount'] >= 120 :               
-                amount4hb = cal_amount_2(usdt, cur_price, portion4hb, leverage_b)
-                buy_position(binance, symbol_b, amount4hb, position)
-                position['4hbcount'] = 0
-                position['type4hb'] = 'long'
-                position['4hbsoldtime'] = 320
-                print('4hb buy! ' , amount4hb, cur_price)
-
-        elif df4hb['histodf'][-1] <= 0 and (position['type4hb'] == None):
-            if position['4hbcount'] >0 :
-                position['4hbcount'] =  position['4hbcount'] - 1
-
-
-
-        elif df4hb['histodf'][-1] <= 0 and (position['type4hb'] == 'long'):
-            position['4hbcount'] =  position['4hbcount'] -1 
-            if position['4hbcount'] == -120 :            
-                amount4hb = cal_amount_2(usdt, cur_price, portion4hb, leverage_b)
-                sell_position(binance, symbol_b, amount4hb, position)
-                position['4hbcount'] = 0
-                position['type4hb'] = None
-                position['4hbsoldtime'] = 310
-                print('4hb sold! ' , amount4hb, cur_price)
-
-        elif df4hb['histodf'][-1] > 0 and (position['type4hb'] == 'long'):
-            if position['4hbcount'] < 0 :
-                position['4hbcount'] =  position['4hbcount'] + 1
 
 
 
     coin = binance.fetch_ticker(symbol=symbol)
     cur_price = coin['last']
 
-    print(now, cur_price, round(df1h['histodf'][-1],3),position['1hcount'],position['1hsoldtime'],round(df4h['histodf'][-1],3),position['4hcount'],position['4hsoldtime'],round(df1w['histodf'][-1],3),position['1wsoldtime'],round(df15me['histodf'][-1],6),position['15mecount'],position['15mesoldtime'],round(df4hb['histodf'][-1],6),position['4hbcount'],position['4hbsoldtime'])
-    if (position['1hsoldtime'] > 0) :
-        position['1hsoldtime'] = position['1hsoldtime'] - 1 
+    print(now, cur_price, round(df1['histodf'][-1],3),position['count'],position['soldtime'],round(df4h['histodf'][-1],3),position['4hsoldtime'],round(df1w['histodf'][-1],3),position['1wsoldtime'],round(df15me['histodf'][-1],6),position['15mecount'],position['15mesoldtime'])
+    if (position['soldtime'] > 0) :
+        position['soldtime'] = position['soldtime'] - 1 
     if (position['4hsoldtime'] > 0) :
         position['4hsoldtime'] = position['4hsoldtime'] - 1 
     if (position['1wsoldtime'] > 0) :
         position['1wsoldtime'] = position['1wsoldtime'] - 1 
     if (position['15mesoldtime'] > 0) :
-        position['15mesoldtime'] = position['15mesoldtime'] - 1
-    if (position['4hbsoldtime'] > 0) :
-        position['4hbsoldtime'] = position['4hbsoldtime'] - 1
-            
-
-    time.sleep(6.3)
+        position['15mesoldtime'] = position['15mesoldtime'] - 1 
+    time.sleep(2.3)
 
 
+# for ticker in ["KRW-BTC", "KRW-XRP","KRW-ETH","KRW-ADA"]:
+#     df = get_ohlcv(ticker)
+#     df.to_excel(f"{ticker}.xlsx")
+
+# for ticker in ["KRW-BTC", "KRW-XRP","KRW-ETH","KRW-ADA"]:
+# # for ticker in ["KRW-BTC"]:
+#     df = pd.read_excel(f"{ticker}.xlsx", index_col= 0 )
+#     ror = short_trading_for_1percent(df)
+#     기간수익률 = df.iloc[-1,3] / df.iloc[0,0]
+#     print(ticker, f"{ror:.4f}", f"{기간수익률:.4f}")
 
 
 
+# balance = binance.fetch_balance(params={"type":"future"})
+# usdt = balance['total']['USDT']
+# usedusdt = balance['used']['USDT']
+
+# print(usdt)
+# print(usedusdt)
+
+# coin = binance.fetch_ticker(symbol=symbol)
+# cur_price = coin['last']
+# print(cur_price)
+# lastcoin = [df1['histodf'][-1],df4h['histodf'][-1],df1w['histodf'][-1]]
+# print(lastcoin)
 
 # for ticker in ["KRW-BTC", "KRW-XRP","KRW-ETH","KRW-ADA"]:
 #     df = get_ohlcv(ticker)

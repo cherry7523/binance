@@ -66,6 +66,7 @@ def macd_trading(df):
     # print (df)
 
     buy_state= 0
+    minus = 0 
 
     Buy, Sell = [],[]
 
@@ -117,7 +118,7 @@ def macd_trading(df):
 
     profitsrel = []
     profit = 1
-    lever = 4
+    lever = 7
 
 
     # for i in range(len(Sellprices)):
@@ -125,24 +126,27 @@ def macd_trading(df):
 
 
     for i in range(len(Sellprices)):
+        if (((Sellprices[i]/Buyprices[i]) - 1)*lever + 1) <0 :
+            minus = 1
         profit = profit * ((((Sellprices[i]/Buyprices[i]) - 1)*lever + 1)-0.005) #슬리피지 롱 숏 다 먹을때 
+        
     # for i in range(len(Sellprices)-1):
     #     profit = profit * ((((Sellprices[i]/Buyprices[i+1]) - 1)*lever + 1)-0.005)
 # 바이 0 = 100  셀 0  120 바이 1 은 110   (( 셀 0 - 바이 1 ) / 바이1 * 레버) +1 -0.005
 
-    return profit
+    return profit , minus
 
 
 
 # for ticker in ["TSLA", "AAPL","GOOG","MSFT", "AMZN", "MRNA"]:
 # for ticker in ["BTC/USDT","ETH/USDT", "SOL/USDT", "1000SHIB/USDT"]:
-for ticker in ["BTC/USDT","ETH/USDT","1000SHIB/USDT"]:    
-    for timef in ["1m","5m","15m","30m","1h","4h","8h","1d","3d","1w","1M"]:
+for ticker in ["BTC/USDT","ETH/USDT","BNB/USDT"]:    
+    for timef in ["1m","5m","15m","30m","1h","2h","4h","8h","1d","3d","1w","1M"]:
     # timef = "1w"
         df = get_ohlcv(ticker, timef)
-        ror = macd_trading(df)
+        ror,minus = macd_trading(df)
         period_ror = df.iloc[-1,3] / df.iloc[0,0]
-        print(ticker, timef, "알고리즘수익율",ror, "존버수익율",period_ror)
+        print(ticker, timef, "알고리즘수익율",ror,"꽝",minus, "존버수익율",period_ror)
         time.sleep(0.2)
 
 # for timep in ["1m","5m","15m","30m","1h","4h","8h","1d","3d","1w","1M"]:
