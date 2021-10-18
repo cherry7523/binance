@@ -1,4 +1,5 @@
 
+
 # import matplotlib.pyplot as plt
 
 import ccxt 
@@ -42,21 +43,15 @@ def get_ohlcv(ticker,timef):
 
   
 def MACD(df):
-    df['histo'] = ta.trend.macd_diff(df.close)
-    df['histodf'] = df['histo'] - df['histo'].shift(1)
-    df['histodfr'] = df['histodf']/df['close'] *1000
+ 
     df['rsi'] = ta.momentum.rsi(df.close, window=14)
-    df['rsidf'] = df['rsi'] - df['rsi'].shift(1)
+    df['macd'] = ta.trend.macd_diff(df.close)
+    df['histodf'] = df['macd'] - df['macd'].shift(1)
+    df['%K'] = ta.momentum.stoch(df.high,df.low ,df.close, window=14, smooth_window = 3)
+    df['%D'] = df['%K'].rolling(3).mean()
+    
 
-    # df['EMA12'] = df.close.ewm(span=12).mean()
-    # df['EMA26'] = df.close.ewm(span=26).mean()
-    # df['MACD'] = df.EMA12 - df.EMA26
-    # df['signal'] = df.MACD.ewm(span=9).mean()
-    # df['histo'] = df.MACD - df.signal
-    # df['histodf'] = df.MACD - df.signal
-    # # print("indicators added")
-    # for i in range(1, len(df)):
-    #     df.histodf.iloc[i] = df.histo.iloc[i] - df.histo.iloc[i-1]    
+
 
 
 #각종 설정들
@@ -85,7 +80,7 @@ position = {
     "type4h" : 'long',
     "type1w" : 'long',
     "type15me" : 'long',
-    "type4hb" : 'long',
+    "type4hb" : None,
     "amount" : 0,
     "high" : 0,
     "1hcount" : 0,
@@ -109,6 +104,9 @@ df1w = get_ohlcv(symbol,'3d')
 df15me = get_ohlcv(symbol_eth,'3d')
 df4hb = get_ohlcv(symbol_b,'8h')
 
+
+
+
 MACD(df1m)
 MACD(df1h)
 MACD(df4h)
@@ -118,10 +116,8 @@ MACD(df15me)
 MACD(df4hb)
 
 
+print (df1h)
 
-# print (df4h.iloc[-20:])
-# print(df15me.iloc[-20:])
-# print(df4hb.iloc[-20:])
 
 def cal_amount(usdt_balance, cur_price, portion,leverage):
   
@@ -166,6 +162,9 @@ print(lastcoin)
 binance.set_leverage(leverage = leverage, symbol = symbol) 
 binance.set_leverage(leverage = leverage_eth, symbol = symbol_eth) #레버리지설정
 binance.set_leverage(leverage = leverage_b, symbol = symbol_b)
+
+
+
 
 
 while True:
@@ -225,6 +224,7 @@ while True:
     #     elif df1h['histodf'][-1] > 0 and (position['type1h'] == 'long'):
     #         if position['1hcount'] < 0 :
     #             position['1hcount'] =  position['1hcount'] + 1
+
 
     if op_mode and (position['4hsoldtime'] <= 0):
         balance = binance.fetch_balance(params={"type":"future"})
@@ -317,7 +317,7 @@ while True:
         cur_price = coineth['last']    
         if df4hb['histodf'][-1] > 0 and (position['type4hb'] == None):
             position['4hbcount'] =  position['4hbcount'] + 1
-            if position['4hbcount'] >= 80 :               
+            if position['4hbcount'] >= 120 :               
                 amount4hb = cal_amount_2(usdt, cur_price, portion4hb, leverage_b)
                 buy_position(binance, symbol_b, amount4hb, position)
                 position['4hbcount'] = 0
@@ -333,7 +333,7 @@ while True:
 
         elif df4hb['histodf'][-1] <= 0 and (position['type4hb'] == 'long'):
             position['4hbcount'] =  position['4hbcount'] -1 
-            if position['4hbcount'] == -80 :            
+            if position['4hbcount'] == -120 :            
                 amount4hb = cal_amount_2(usdt, cur_price, portion4hb, leverage_b)
                 sell_position(binance, symbol_b, amount4hb, position)
                 position['4hbcount'] = 0
@@ -352,7 +352,7 @@ while True:
 
 
 
-    print(now, cur_price, round(df1h['histodfr'][-1],3),position['1hcount'],position['1hsoldtime'],round(df4h['histodfr'][-1],3),position['4hcount'],position['4hsoldtime'],round(df1w['histodfr'][-1],3),position['1wsoldtime'],round(df15me['histodfr'][-1],6),position['15mecount'],position['15mesoldtime'],round(df4hb['histodfr'][-1],6),position['4hbcount'],position['4hbsoldtime'])
+    print(now, cur_price, round(df1h['histodf'][-1],3),position['1hcount'],position['1hsoldtime'],round(df4h['histodf'][-1],3),position['4hcount'],position['4hsoldtime'],round(df1w['histodf'][-1],3),position['1wsoldtime'],round(df15me['histodf'][-1],6),position['15mecount'],position['15mesoldtime'],round(df4hb['histodf'][-1],6),position['4hbcount'],position['4hbsoldtime'])
     if (position['1hsoldtime'] > 0) :
         position['1hsoldtime'] = position['1hsoldtime'] - 1 
     if (position['4hsoldtime'] > 0) :
