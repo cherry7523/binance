@@ -6,6 +6,7 @@ import pprint
 import time
 import datetime
 import pandas as pd
+import ta
 
 import math
 
@@ -41,19 +42,16 @@ def get_ohlcv(ticker,timef):
 
   
 def MACD(df):
-    df['EMA12'] = df.close.ewm(span=12).mean()
-    df['EMA26'] = df.close.ewm(span=26).mean()
-    df['MACD'] = df.EMA12 - df.EMA26
-    df['signal'] = df.MACD.ewm(span=9).mean()
-    df['histo'] = df.MACD - df.signal
-    df['histodf'] = df.MACD - df.signal
-    # print("indicators added")
-    for i in range(1, len(df)):
-        df.histodf.iloc[i] = df.histo.iloc[i] - df.histo.iloc[i-1]    
+    df['histo'] = ta.trend.macd_diff(df.close)
+    df['histodf'] = df['histo'] - df['histo'].shift(1)
+    df['histodfr'] = df['histodf']/df['close'] *1000
+    df['rsi'] = ta.momentum.rsi(df.close, window=14)
+    df['rsidf'] = df['rsi'] - df['rsi'].shift(1)
+
 
 
 # dfs= pd.DataFrame(columns=['symbol','leverage','period', 'portion', 'type','maxcount','maxsoldtime', 'amount', 'high','low', 'count','soldtime','rehistodf' ])
-
+# dfs.to_excel(f"dfsym.xlsx")
 dfs = pd.read_excel(f"dfsym.xlsx")
 
 symbol = dfs.symbol[0]
@@ -64,12 +62,26 @@ df1 = get_ohlcv(dfs.symbol[0],dfs.period[0])
 df2 = get_ohlcv(dfs.symbol[1],dfs.period[1])
 df3 = get_ohlcv(dfs.symbol[2],dfs.period[2])
 df4 = get_ohlcv(dfs.symbol[3],dfs.period[3])
+df5 = get_ohlcv(dfs.symbol[4],dfs.period[4])
 
 MACD(df1)
 MACD(df2)
 MACD(df3)
 MACD(df4)
-print(df1)
+MACD(df5)
+print(dfs.symbol[0],dfs.period[0])
+print(df1.iloc[-20:])
+print(dfs.symbol[1],dfs.period[1])
+print(df2.iloc[-20:])
+print(dfs.symbol[2],dfs.period[2])
+print(df3.iloc[-20:])
+print(dfs.symbol[3],dfs.period[3])
+print(df4.iloc[-20:])
+print(dfs.symbol[4],dfs.period[4])
+print(df5.iloc[-20:])
+
+
+print(len(dfs))
 
 # #각종 설정들
 # symbols =["BTC/USDT","ETH/USDT"]
@@ -108,7 +120,7 @@ print(df1)
 # df1d = get_ohlcv(symbol,'1d')
 # df1w = get_ohlcv(symbol,'1w')
 # df15me = get_ohlcv(symbol_eth,'2h')
-
+'''
 
 def cal_amount(usdt_balance, cur_price, portion,leverage):
     usdt_trade = usdt_balance* portion *leverage
@@ -271,6 +283,18 @@ while True:
     if (position['15mesoldtime'] > 0) :
         position['15mesoldtime'] = position['15mesoldtime'] - 1 
     time.sleep(2.3)
+
+
+
+'''
+
+
+
+
+
+
+
+
 
 
 # for ticker in ["KRW-BTC", "KRW-XRP","KRW-ETH","KRW-ADA"]:
