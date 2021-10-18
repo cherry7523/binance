@@ -40,7 +40,33 @@ def get_ohlcv(ticker,timef):
     df.set_index('datetime', inplace=True)
     return df
 
-  
+
+# def get_ohlcv_2(dfto,ticker,timef):
+#     coin1m = binance.fetch_ohlcv(
+#         symbol=ticker, 
+#         timeframe=timef, 
+#         since=None,         
+#         limit=1)
+#     df = pd.DataFrame(coin1m, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+#     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+#     df.set_index('datetime', inplace=True)
+#     if dfto.index[-1] == df.index[-1] :
+#         dfto.close[-1] = df.close[-1]
+#     elif dfto.index[-1] != df.index[-1] :
+#         dfto = dfto.append(df)
+
+def get_ohlcv_2(ticker,timef):
+    coin1m = binance.fetch_ohlcv(
+        symbol=ticker, 
+        timeframe=timef, 
+        since=None,         
+        limit=1)
+    df = pd.DataFrame(coin1m, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
+    df.set_index('datetime', inplace=True)
+    return df
+
+
 def MACD(df):
     df['histo'] = ta.trend.macd_diff(df.close)
     df['histodf'] = df['histo'] - df['histo'].shift(1)
@@ -56,9 +82,9 @@ dfs = pd.read_excel(f"dfsym.xlsx")
 
 symbol = dfs.symbol[0]
 symbol_eth = dfs.symbol[3]
-print(symbol, symbol_eth)
 
-df1 = get_ohlcv(dfs.symbol[0],dfs.period[0])
+
+df1 = get_ohlcv(dfs.symbol[0],'1m')
 df2 = get_ohlcv(dfs.symbol[1],dfs.period[1])
 df3 = get_ohlcv(dfs.symbol[2],dfs.period[2])
 df4 = get_ohlcv(dfs.symbol[3],dfs.period[3])
@@ -70,57 +96,26 @@ MACD(df3)
 MACD(df4)
 MACD(df5)
 print(dfs.symbol[0],dfs.period[0])
-print(df1.iloc[-20:])
-print(dfs.symbol[1],dfs.period[1])
-print(df2.iloc[-20:])
-print(dfs.symbol[2],dfs.period[2])
-print(df3.iloc[-20:])
-print(dfs.symbol[3],dfs.period[3])
-print(df4.iloc[-20:])
-print(dfs.symbol[4],dfs.period[4])
-print(df5.iloc[-20:])
+print(df1.iloc[-5:])
+# print(dfs.symbol[1],dfs.period[1])
+# print(df2.iloc[-20:])
+# print(dfs.symbol[2],dfs.period[2])
+# print(df3.iloc[-20:])
+# print(dfs.symbol[3],dfs.period[3])
+# print(df4.iloc[-20:])
+# print(dfs.symbol[4],dfs.period[4])
+# print(df5.iloc[-20:])
 
 
 print(len(dfs))
+print(df1.index[-1])
 
-# #각종 설정들
-# symbols =["BTC/USDT","ETH/USDT"]
-# symbol = "BTC/USDT"
-# leverage = 10
-# portion1h = 0.15
-# portion4h = 0.25
-# portion1w = 0.35
+time.sleep(50)
+dfto = get_ohlcv_2(dfs.symbol[0] ,'1m')
+df1= df1.append(dfto)
+MACD(df1)
 
-# symbol_eth = "ETH/USDT"
-# leverage_eth = 7
-# portion15me = 0.2
-# portion1he = 0.1
-# portion1we = 0.3
-
-# position = {
-#     "type" : None,
-#     "type1h" : None,
-#     "type4h" : None,
-#     "type1w" : 'long',
-#     "type15me" : None,
-#     "amount" : 0,
-#     "high" : 0,
-#     "1hcount" : 0,
-#     "1hsoldtime" : 0,
-#     "4hsoldtime" : 0,
-#     "1wsoldtime" : 0,
-#     "15mesoldtime" : 0,
-#     "15mecount" : 0
-# }
-# #설정값
-
-# df1m = get_ohlcv(symbol,'1m')
-# df1 = get_ohlcv(symbol,dfs.time[0])
-# df4h = get_ohlcv(symbol,'4h')
-# df1d = get_ohlcv(symbol,'1d')
-# df1w = get_ohlcv(symbol,'1w')
-# df15me = get_ohlcv(symbol_eth,'2h')
-'''
+print(df1.iloc[-5:])
 
 def cal_amount(usdt_balance, cur_price, portion,leverage):
     usdt_trade = usdt_balance* portion *leverage
@@ -143,31 +138,35 @@ def sell_position(exchange, symbol, amount, df ):
     exchange.create_market_sell_order(symbol= symbol, amount= amount)
 
 
-op_mode = False
+op_mode = True
 
-binance.set_leverage(leverage = dfs.leverage[0], symbol = dfs.symbol[0]) 
-binance.set_leverage(leverage = dfs.leverage[3], symbol = dfs.symbol[3]) #레버리지설정
+for i in range(len(dfs)):
+    binance.set_leverage(leverage = dfs.leverage[i], symbol = dfs.symbol[i]) #레버리지설정
 
- 
 
+
+'''
 while True:
 
     now = datetime.datetime.now()
     
     if (8 <= now.second <25) or (35<= now.second <55) :
-        df1 = get_ohlcv(symbol,dfs.time[0])
-        MACD(df1)
-        op_mode = True     #1시간4시간 단위 macd 계산하기 op모드 온
+        get_ohlcv_2(df1, dfs.symbol[0] ,dfs['period'][0])
+        MACD(df1)                 #1시간4시간 단위 macd 계산하기
       
     if (0 <= now.second < 5) or (30 <= now.second < 35):
-        df1w = get_ohlcv(symbol,'1w')
+        df1w = get_ohlcv_2(symbol,'1w')
         MACD(df1w)
 
     if (5 <= now.second < 15) or (25 <= now.second < 35) or (50<= now.second < 60):    
-        df4h = get_ohlcv(symbol,'4h')
+        df4h = get_ohlcv_2(symbol,'4h')
         MACD(df4h)
-        df15me = get_ohlcv(symbol_eth,'2h')
+        df15me = get_ohlcv_2(symbol_eth,'2h')
         MACD(df15me)
+
+    if (55<= now.second < 60):
+        dfs.to_excel(f"dfsym.xlsx")     #엑셀에 1분에 한번씩 저장하기
+    
 
     if op_mode and (dfs['soldtime'][0] <= 0):
         balance = binance.fetch_balance(params={"type":"future"})
@@ -286,6 +285,7 @@ while True:
 
 
 
+
 '''
 
 
@@ -293,6 +293,43 @@ while True:
 
 
 
+# #각종 설정들
+# symbols =["BTC/USDT","ETH/USDT"]
+# symbol = "BTC/USDT"
+# leverage = 10
+# portion1h = 0.15
+# portion4h = 0.25
+# portion1w = 0.35
+
+# symbol_eth = "ETH/USDT"
+# leverage_eth = 7
+# portion15me = 0.2
+# portion1he = 0.1
+# portion1we = 0.3
+
+# position = {
+#     "type" : None,
+#     "type1h" : None,
+#     "type4h" : None,
+#     "type1w" : 'long',
+#     "type15me" : None,
+#     "amount" : 0,
+#     "high" : 0,
+#     "1hcount" : 0,
+#     "1hsoldtime" : 0,
+#     "4hsoldtime" : 0,
+#     "1wsoldtime" : 0,
+#     "15mesoldtime" : 0,
+#     "15mecount" : 0
+# }
+# #설정값
+
+# df1m = get_ohlcv(symbol,'1m')
+# df1 = get_ohlcv(symbol,dfs.time[0])
+# df4h = get_ohlcv(symbol,'4h')
+# df1d = get_ohlcv(symbol,'1d')
+# df1w = get_ohlcv(symbol,'1w')
+# df15me = get_ohlcv(symbol_eth,'2h')
 
 
 
