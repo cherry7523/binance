@@ -3,7 +3,8 @@ import ta
 import pandas as pd
 import numpy as np
 import time
-client = Client("1nP6bqPkQJXte3dKtx3yQz0yBUyQJnMsJ6EaXHh3qF3IwB1pDkGdQddSZzV41WAL", "ydWMSGJRC5ONLZ8NqRTP0UXK6cOpirXjFuuROEf0cs6QckVZonURReyERhAdADZb")
+client = Client("1nP6bqPkQJXte3dKtx3yQz0yBUyQJnMsJ6EaXHh3qF3IwB1pDkGdQddSZzV41WAL", 
+                "ydWMSGJRC5ONLZ8NqRTP0UXK6cOpirXjFuuROEf0cs6QckVZonURReyERhAdADZb")
 # x= pd.DataFrame(client.get_ticker())
 
 def getminutedata(symbol, interval, lookback):
@@ -30,15 +31,15 @@ def applytechnicals(df):
 
 applytechnicals(df)
 
-print(df)
-time.sleep(60)
+# print(df)
+# time.sleep(60)
 
-df2 = getminutedata('BTCUSDT', '1m', '3')
-print(df2)
+# df2 = getminutedata('BTCUSDT', '1m', '3')
+# print(df2)
 
-dfout = df.append(df2.iloc[-1])
-applytechnicals(dfout)
-print(dfout)
+# dfout = df.append(df2.iloc[-1])
+# applytechnicals(dfout)
+# print(dfout)
 
 
 class Signals:
@@ -59,8 +60,8 @@ class Signals:
                             & (self.df['%D'].between(20,80))
                             & (self.df.rsi >50) & ( self.df.macd >0), 1, 0)
 
-inst = Signals(df, 25)
-inst.decide()
+# inst = Signals(df, 25)
+# inst.decide()
 
 def strategy(pair, qty, open_position=False):
     df = getminutedata(pair, '1m', '100')
@@ -73,3 +74,19 @@ def strategy(pair, qty, open_position=False):
         print(order)
         buyprice = float(order['fills'][0]['price'])
         open_position = True
+    while open_position:
+        time.sleep(0.5)
+        df = getminutedata(pair, '1m', '2')
+        print(f'current Close' + str(df.Close.iloc[-1]))
+        print(f'current Target' + str(buyprice * 1.005))
+        print(f'current Stop is' + str(buyprice * 0.998))
+        if df.Close[-1] <= buyprice * 0.998 or df.Close[-1] >= 1.005 * buyprice :
+            order = client.create_order(symbol=pair,
+            side = 'SELL',
+            type = 'MARKET', quantity = qty)
+            print (order)
+            break
+
+while True :
+    strategy('ADAUSDT', 50)
+    time.sleep(0.5)

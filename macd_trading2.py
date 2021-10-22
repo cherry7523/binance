@@ -58,7 +58,7 @@ def MACD(df):
     meanhisto = df['histodf'].std()
     df['histodfr'] = df['histodf']/ meanhisto *10
     # df['histodfr'] = df['histodf']/df['close'] *1000
-    df['rsi'] = ta.momentum.rsi(df.close, window=24)
+    df['rsi'] = ta.momentum.rsi(df.close, window=14)
     df['rsidf'] = df['rsi'] - df['rsi'].shift(1)
 
 # dfs= pd.DataFrame(columns=['symbol','leverage','period', 'portion', 'type','maxcount','maxsoldtime', 'amount', 'high','low', 'counter','soldtime','rehistodf' ])
@@ -66,30 +66,45 @@ def MACD(df):
 dfs = pd.read_excel(f"dfsym.xlsx")
 
 
-dfs.loc[0,'period'] = '1h'  #설정바꾸기
-dfs.loc[1, 'period'] = '4h'
-dfs.loc[2, 'period'] = '8h'
+# dfs.loc[0,'period'] = '15m'  #설정바꾸기
+# dfs.loc[1, 'period'] = '1h'
+# dfs.loc[2, 'period'] = '8h'
+# dfs.loc[3, 'period'] = '8h'
+# dfs.loc[4, 'period'] = '8h'
 
-# dfs.loc[0, 'type' ] = 1   #1h 롱
+# dfs.loc[0, 'type' ] = 0   #1h 롱
 # dfs.loc[1, 'type' ] = 1   #8h 롱
-# dfs.loc[2, 'type' ] = 0    #3d 롱
-# dfs.loc[3, 'type' ] = 1   #eth3d 롱
-# dfs.loc[4, 'type' ] = 1    #bnb8h 롱
+# dfs.loc[2, 'type' ] = 1    #3d 롱
+# dfs.loc[3, 'type' ] = 0   #eth3d 롱
+# dfs.loc[4, 'type' ] = 0    #bnb8h 롱
 # dfs.loc[0, 'portion'] = 0.15 #1h 
 # dfs.loc[1, 'portion'] = 0.2  #8h
-dfs.loc[2, 'portion'] = 0.2   #3d
-# dfs.loc[3, 'portion'] = 0.1   #eth3d
-# dfs.loc[4, 'portion'] = 0.05  #bnb8h
+# dfs.loc[2, 'portion'] = 0.15   #3d
+# dfs.loc[3, 'portion'] = 0.2   #eth3d
+# # dfs.loc[4, 'portion'] = 0.1  #bnb8h
 # dfs.loc[0, 'maxcount'] = 40 #1h 
 # dfs.loc[1, 'maxcount'] = 60  #8h
 # dfs.loc[2, 'maxcount'] = 60   #3d
 # dfs.loc[3, 'maxcount'] = 60  #eth3d
 # dfs.loc[4, 'maxcount'] = 50  #bnb8h
-# dfs.loc[0, 'leverage'] = 30 #1h 
-# dfs.loc[1, 'leverage'] = 30  #8h
-# dfs.loc[2, 'leverage'] = 30   #3d
+# dfs.loc[0, 'leverage'] = 20 #1h 
+# dfs.loc[1, 'leverage'] = 20  #8h
+# dfs.loc[2, 'leverage'] = 20   #3d
 # dfs.loc[3, 'leverage'] = 60  #eth3d
 # dfs.loc[4, 'leverage'] = 50  #bnb8h
+# dfs.loc[0, 'maxsoldtime'] = 100 #1h 
+# dfs.loc[1, 'maxsoldtime'] = 300  #8h
+# dfs.loc[2, 'maxsoldtime'] = 1000   #3d
+# dfs.loc[3, 'maxsoldtime'] = 500  #eth3d
+# dfs.loc[4, 'maxsoldtime'] = 500  #bnb8h
+# dfs.loc[0, 'soldtime'] = 0 #1h 
+# dfs.loc[1, 'soldtime'] = 0  #8h
+# dfs.loc[2, 'soldtime'] = 0   #3d
+# dfs.loc[3, 'soldtime'] = 0  #eth3d
+# dfs.loc[4, 'soldtime'] = 0  #bnb8h
+
+
+
 
 
 df1 = get_ohlcv(dfs.symbol[0],dfs.period[0])
@@ -179,28 +194,16 @@ def judge(df_1,  i, usdt):
         if dfs.loc[i,'counter'] < 0 :
             dfs.loc[i,'counter'] += 1
 
+for i in range(len(dfs)):
+    print(dfs.symbol[i], dfs.period[i],dfs.loc[i,'type'] ,dfs.amount[i])
 
 
-print(dfs.symbol[0], dfs.period[0],dfs.loc[0,'type'])
 
-
-print(df1.iloc[-60:] ,'\n','absmean',df1['histodfr'].abs().mean(),'\n','std', df1['histodf'].std() )
+# print(df1.iloc[-60:] ,'\n','absmean',df1['histodfr'].abs().mean(),'\n','std', df1['histodf'].std() )
 # print(df2.iloc[-40:] ,'\n','absmean',df2['histodfr'].abs().mean(),'\n','std', df2['histodf'].std() )
 # print(df3.iloc[-30:] ,'\n','absmean',df3['histodfr'].abs().mean(),'\n','std', df3['histodf'].std() )
 # print(df4.iloc[-30:] ,'\n','absmean',df4['histodfr'].abs().mean(),'\n','std', df4['histodf'].std() )
 # print(df5.iloc[-40:] ,'\n','absmean',df5['histodfr'].abs().mean(),'\n','std', df5['histodf'].std() )
-
-
-
-
-
-
-
-
-
-
-
-
 
 op_mode = True
 
@@ -262,7 +265,6 @@ while True:
                 dfs.loc[i,'soldtime'] = 0
 
     time.sleep(2.3)
-
 
 
 
