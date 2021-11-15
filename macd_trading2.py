@@ -12,8 +12,8 @@ import math
 
 from pandas.core.tools.datetimes import to_datetime
 
-api_key = "1nP6bqPkQJXte3dKtx3yQz0yBUyQJnMsJ6EaXHh3qF3IwB1pDkGdQddSZzV41WAL"
-secret = "ydWMSGJRC5ONLZ8NqRTP0UXK6cOpirXjFuuROEf0cs6QckVZonURReyERhAdADZb"
+api_key = "
+secret = "
 
 # binance 객체 생성
 binance = ccxt.binance(config={
