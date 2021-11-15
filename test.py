@@ -5,20 +5,34 @@ import ccxt
 import pprint
 import time
 import datetime
-from pandas import Series, DataFrame
+import pandas as pd
+from pandas_datareader import data
+
+# from pandas import Series, DataFrame
 import binance
 
 import math
 
 from pandas.core.tools.datetimes import to_datetime
 
-raw_data = {'col0': [1,2,3,4],
-            'col1' : [10,20,30,40], 
-            'col2' : [100,200,300,400]}
 
 
-data = DataFrame(raw_data)
-print(data)
+
+
+
+
+
+
+
+
+
+# raw_data = {'col0': [1,2,3,4],
+#             'col1' : [10,20,30,40], 
+#             'col2' : [100,200,300,400]}
+
+
+# data = DataFrame(raw_data)
+# print(data)
 
 
 # dfsym= pd.DataFrame(columns=['symbol','leverage','period', 'portion', 'type','maxcount','maxsoldtime', 'amount', 'high','low', 'count','soldtime','rehistodf' ],index= [1,2,3,4])

@@ -33,7 +33,7 @@ def get_ohlcv(ticker,timep):
         symbol=ticker, 
         timeframe=timep, 
         since=None, 
-        limit=50)
+        limit=200)
 
     df = pd.DataFrame(btc, columns=['datetime', 'Open', 'High', 'Low', 'Close', 'Volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
@@ -118,7 +118,7 @@ def macd_trading(df):
 
     profitsrel = []
     profit = 1
-    lever = 7
+    lever = 5
 
 
     # for i in range(len(Sellprices)):

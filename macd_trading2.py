@@ -66,22 +66,33 @@ def MACD(df):
 dfs = pd.read_excel(f"dfsym.xlsx")
 
 
-# dfs.loc[0,'period'] = '15m'  #설정바꾸기
-# dfs.loc[1, 'period'] = '1h'
-# dfs.loc[2, 'period'] = '8h'
+# dfs.loc[0,'period'] = '1h'  #설정바꾸기
+# dfs.loc[1, 'period'] = '4h'
+# dfs.loc[2, 'period'] = '3d'
 # dfs.loc[3, 'period'] = '8h'
-# dfs.loc[4, 'period'] = '8h'
+# dfs.loc[4, 'period'] = '1h'
+# dfs.loc[0, 'symbol' ] = 'BTC/USDT'
+# dfs.loc[1, 'symbol' ] = 'BTC/USDT'
+# dfs.loc[2, 'symbol' ] = 'BTC/USDT'
+# dfs.loc[3, 'symbol' ] = 'ETH/USDT'
+# dfs.loc[4, 'symbol' ] = '1000SHIB/USDT'
+# dfs.loc[0, 'flag' ] = 0
+# dfs.loc[1, 'flag' ] = 0
+# dfs.loc[2, 'flag' ] = 0
+# dfs.loc[3, 'flag' ] = 0
+# dfs.loc[4, 'flag' ] = 0
+
 
 # dfs.loc[0, 'type' ] = 0   #1h 롱
-# dfs.loc[1, 'type' ] = 1   #8h 롱
+# dfs.loc[1, 'type' ] = 0  #8h 롱
 # dfs.loc[2, 'type' ] = 1    #3d 롱
 # dfs.loc[3, 'type' ] = 0   #eth3d 롱
 # dfs.loc[4, 'type' ] = 0    #bnb8h 롱
-# dfs.loc[0, 'portion'] = 0.15 #1h 
+# dfs.loc[0, 'portion'] = 0.2 #1h 
 # dfs.loc[1, 'portion'] = 0.2  #8h
 # dfs.loc[2, 'portion'] = 0.15   #3d
 # dfs.loc[3, 'portion'] = 0.2   #eth3d
-# # dfs.loc[4, 'portion'] = 0.1  #bnb8h
+# dfs.loc[4, 'portion'] = 0.6  #bnb8h
 # dfs.loc[0, 'maxcount'] = 40 #1h 
 # dfs.loc[1, 'maxcount'] = 60  #8h
 # dfs.loc[2, 'maxcount'] = 60   #3d
@@ -90,19 +101,28 @@ dfs = pd.read_excel(f"dfsym.xlsx")
 # dfs.loc[0, 'leverage'] = 20 #1h 
 # dfs.loc[1, 'leverage'] = 20  #8h
 # dfs.loc[2, 'leverage'] = 20   #3d
-# dfs.loc[3, 'leverage'] = 60  #eth3d
-# dfs.loc[4, 'leverage'] = 50  #bnb8h
-# dfs.loc[0, 'maxsoldtime'] = 100 #1h 
+# dfs.loc[3, 'leverage'] = 20  #eth3d
+# dfs.loc[4, 'leverage'] = 15  #bnb8h
+# dfs.loc[0, 'maxsoldtime'] = 300 #1h 
 # dfs.loc[1, 'maxsoldtime'] = 300  #8h
 # dfs.loc[2, 'maxsoldtime'] = 1000   #3d
 # dfs.loc[3, 'maxsoldtime'] = 500  #eth3d
-# dfs.loc[4, 'maxsoldtime'] = 500  #bnb8h
+# dfs.loc[4, 'maxsoldtime'] = 200  #bnb8h
 # dfs.loc[0, 'soldtime'] = 0 #1h 
 # dfs.loc[1, 'soldtime'] = 0  #8h
 # dfs.loc[2, 'soldtime'] = 0   #3d
 # dfs.loc[3, 'soldtime'] = 0  #eth3d
 # dfs.loc[4, 'soldtime'] = 0  #bnb8h
-
+# dfs.loc[0, 'amount'] = 0 #1h 
+# dfs.loc[1, 'amount'] = 0  #8h
+# dfs.loc[2, 'amount'] = 0   #3d
+# dfs.loc[3, 'amount'] = 0  #eth3d
+# dfs.loc[4, 'amount'] = 0  #bnb8h
+# dfs.loc[0, 'counter'] = 0 #1h 
+# dfs.loc[1, 'counter'] = 0  #8h
+# dfs.loc[2, 'counter'] = 0   #3d
+# dfs.loc[3, 'counter'] = 0  #eth3d
+# dfs.loc[4, 'counter'] = 0  #bnb8h
 
 
 
@@ -119,8 +139,9 @@ MACD(df3)
 MACD(df4)
 MACD(df5)
 
-
-
+# print(df1.tail())
+# print(df2.tail())
+# print(df3.tail())
 
 
 print(len(dfs))
@@ -164,7 +185,10 @@ def judge(df_1,  i, usdt):
             if dfs['symbol'][i] == 'BNB/USDT' :
                 amount = cal_amount_2(usdt, cur_price, dfs.portion[i], dfs.leverage[i])
 
-            buy_position(binance, dfs['symbol'][i], amount, dfs)
+            if dfs.loc[i,'flag'] == 0 :
+                buy_position(binance, dfs['symbol'][i], amount, dfs)
+            elif dfs.loc[i,'flag'] == -1 :
+                sell_position(binance, dfs['symbol'][i], amount, dfs)
             dfs.loc[i,'counter'] = 0
             dfs.loc[i,'type'] = 1
             dfs.loc[i,'soldtime'] = dfs['maxsoldtime'][i]
@@ -183,7 +207,10 @@ def judge(df_1,  i, usdt):
                 amount = cal_amount(usdt, cur_price, dfs.portion[i], dfs.leverage[i])
                 if dfs['symbol'][i] == 'BNB/USDT' :
                     amount = cal_amount_2(usdt, cur_price, dfs.portion[i], dfs.leverage[i])
-            sell_position(binance, dfs.symbol[i], amount, dfs)
+            if dfs.loc[i,'flag'] == 0 :
+                sell_position(binance, dfs['symbol'][i], amount, dfs)
+            elif dfs.loc[i,'flag'] == -1 :
+                buy_position(binance, dfs['symbol'][i], amount, dfs)           
             dfs.loc[i,'counter'] = 0
             dfs.loc[i,'type'] = 0
             dfs.loc[i,'amount'] = 0
@@ -195,7 +222,7 @@ def judge(df_1,  i, usdt):
             dfs.loc[i,'counter'] += 1
 
 for i in range(len(dfs)):
-    print(dfs.symbol[i], dfs.period[i],dfs.loc[i,'type'] ,dfs.amount[i])
+    print(dfs.symbol[i], dfs.period[i],dfs.loc[i,'type'] ,dfs.amount[i], dfs.flag[i])
 
 
 
@@ -212,61 +239,63 @@ for i in range(len(dfs)):
 
 
 while True:
+    try:
+        now = datetime.datetime.now()
+        
 
-    now = datetime.datetime.now()
-    
- 
-    df1 = MACD_2(df1, 0)              #1시간4시간 단위 macd 계산하기
-    time.sleep(0.2)
-    df2 = MACD_2(df2, 1)
-    time.sleep(0.2)
-    df3 = MACD_2(df3, 2)              #1시간4시간 단위 macd 계산하기
-    time.sleep(0.2)
-    df4 = MACD_2(df4, 3)
-    time.sleep(0.2) 
-    df5 = MACD_2(df5, 4)
-    time.sleep(0.2) 
-    
-    if (55<= now.second < 60):
-        dfs.to_excel(f"dfsym.xlsx")     #엑셀에 1분에 한번씩 저장하기
-    
-    balance = binance.fetch_balance(params={"type":"future"})
-    usdt = balance['total']['USDT']  
-    coin = binance.fetch_ticker(symbol='BTC/USDT')
-    cur_price = coin['last']
+        df1 = MACD_2(df1, 0)              #1시간4시간 단위 macd 계산하기
+        time.sleep(0.2)
+        df2 = MACD_2(df2, 1)
+        time.sleep(0.2)
+        df3 = MACD_2(df3, 2)              #1시간4시간 단위 macd 계산하기
+        time.sleep(0.2)
+        df4 = MACD_2(df4, 3)
+        time.sleep(0.2) 
+        df5 = MACD_2(df5, 4)
+        time.sleep(0.2) 
+        
+        if (55<= now.second < 60):
+            dfs.to_excel(f"dfsym.xlsx")     #엑셀에 1분에 한번씩 저장하기
+        
+        balance = binance.fetch_balance(params={"type":"future"})
+        usdt = balance['total']['USDT']  
+        coin = binance.fetch_ticker(symbol='BTC/USDT')
+        cur_price = coin['last']
 
-    if op_mode and (dfs['soldtime'][0] <= 0):
-        judge(df1, 0, usdt)
-        time.sleep(0.1)
-    if op_mode and (dfs['soldtime'][1] <= 0):
-        judge(df2, 1, usdt)
-        time.sleep(0.1)
-    if op_mode and (dfs['soldtime'][2] <= 0):
-        judge(df3, 2, usdt)
-        time.sleep(0.1)
-    if op_mode and (dfs['soldtime'][3] <= 0):
-        judge(df4, 3, usdt)
-        time.sleep(0.1)
-    if op_mode and (dfs['soldtime'][4] <= 0):
-        judge(df5, 4, usdt)
-        time.sleep(0.1)
-
-
-    print(now, cur_price, round(df1['histodfr'][-1],3),dfs['counter'][0],dfs['soldtime'][0], 
-                          round(df2['histodfr'][-1],3),dfs['counter'][1],dfs['soldtime'][1],
-                          round(df3['histodfr'][-1],3),dfs['counter'][2],dfs['soldtime'][2], 
-                          round(df4['histodfr'][-1],3),dfs['counter'][3],dfs['soldtime'][3],
-                          round(df5['histodfr'][-1],3),dfs['counter'][4],dfs['soldtime'][4])
-    
-    for i in range(len(dfs)) :
-        if (dfs.soldtime[i] > 0):
-            dfs.loc[i,'soldtime'] -= 1
-            if (i == 1) and ((now.hour == 0) or (now.hour == 8) or (now.hour == 16)) and (now.minute == 59):
-                dfs.loc[i,'soldtime'] = 0
-
-    time.sleep(2.3)
+        if op_mode and (dfs['soldtime'][0] <= 0):
+            judge(df1, 0, usdt)
+            time.sleep(0.1)
+        # if op_mode and (dfs['soldtime'][1] <= 0):
+        #     judge(df2, 1, usdt)
+        #     time.sleep(0.1)
+        # if op_mode and (dfs['soldtime'][2] <= 0):
+        #     judge(df3, 2, usdt)
+        #     time.sleep(0.1)
+        # if op_mode and (dfs['soldtime'][3] <= 0):
+        #     judge(df4, 3, usdt)
+        #     time.sleep(0.1)
+        if op_mode and (dfs['soldtime'][4] <= 0):
+            judge(df5, 4, usdt)
+            time.sleep(0.1)
 
 
+        print(now, cur_price, round(df1['histodfr'][-1],3),dfs['counter'][0],dfs['soldtime'][0], 
+                            round(df2['histodfr'][-1],3),dfs['counter'][1],dfs['soldtime'][1],
+                            round(df3['histodfr'][-1],3),dfs['counter'][2],dfs['soldtime'][2], 
+                            round(df4['histodfr'][-1],3),dfs['counter'][3],dfs['soldtime'][3],
+                            round(df5['histodfr'][-1],3),dfs['counter'][4],dfs['soldtime'][4])
+        
+        for i in range(len(dfs)) :
+            if (dfs.soldtime[i] > 0):
+                dfs.loc[i,'soldtime'] -= 1
+                if (i == 1) and ((now.hour == 0) or (now.hour == 8) or (now.hour == 16)) and (now.minute == 59):
+                    dfs.loc[i,'soldtime'] = 0
+
+        time.sleep(2.3)
+
+    except:
+        time.sleep(10)
+        continue
 
 
 
