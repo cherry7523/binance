@@ -25,8 +25,7 @@ class Consumer(threading.Thread):
     def run(self):
         while True:
             if not self.q.empty():
-
-                
+     
                 price_open = self.q.get()
                 price_buy = price_open *1.01
                 price_sell = price_open * 1.02

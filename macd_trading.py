@@ -12,8 +12,8 @@ import math
 
 from pandas.core.tools.datetimes import to_datetime
 
-api_key = "1nP6bqPkQJXte3dKtx3yQz0yBUyQJnMsJ6EaXHh3qF3IwB1pDkGdQddSZzV41WAL"
-secret = "ydWMSGJRC5ONLZ8NqRTP0UXK6cOpirXjFuuROEf0cs6QckVZonURReyERhAdADZb"
+api_key = "
+secret = "
 
 # binance 객체 생성
 binance = ccxt.binance(config={
@@ -48,16 +48,6 @@ def MACD(df):
     df['rsi'] = ta.momentum.rsi(df.close, window=14)
     df['rsidf'] = df['rsi'] - df['rsi'].shift(1)
 
-    # df['EMA12'] = df.close.ewm(span=12).mean()
-    # df['EMA26'] = df.close.ewm(span=26).mean()
-    # df['MACD'] = df.EMA12 - df.EMA26
-    # df['signal'] = df.MACD.ewm(span=9).mean()
-    # df['histo'] = df.MACD - df.signal
-    # df['histodf'] = df.MACD - df.signal
-    # # print("indicators added")
-    # for i in range(1, len(df)):
-    #     df.histodf.iloc[i] = df.histo.iloc[i] - df.histo.iloc[i-1]    
-
 
 #각종 설정들
 symbols =["BTC/USDT","ETH/USDT"]
@@ -82,10 +72,10 @@ portion1we = 0.3
 position = {
     "type" : None,
     "type1h" : None,
-    "type4h" : 'long',
+    "type4h" : None,
     "type1w" : 'long',
     "type15me" : 'long',
-    "type4hb" : 'long',
+    "type4hb" : None,
     "amount" : 0,
     "high" : 0,
     "1hcount" : 0,
@@ -385,6 +375,15 @@ while True:
 
 
 
+# df['EMA12'] = df.close.ewm(span=12).mean()
+# df['EMA26'] = df.close.ewm(span=26).mean()
+# df['MACD'] = df.EMA12 - df.EMA26
+# df['signal'] = df.MACD.ewm(span=9).mean()
+# df['histo'] = df.MACD - df.signal
+# df['histodf'] = df.MACD - df.signal
+# # print("indicators added")
+# for i in range(1, len(df)):
+#     df.histodf.iloc[i] = df.histo.iloc[i] - df.histo.iloc[i-1]    
 
 # def exit_position(exchange,symbol,position):
 #     amount = position['amount']

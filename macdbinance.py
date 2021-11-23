@@ -118,7 +118,7 @@ def macd_trading(df):
 
     profitsrel = []
     profit = 1
-    lever = 8
+    lever = 5
 
 
     # for i in range(len(Sellprices)):

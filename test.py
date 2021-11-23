@@ -1,54 +1,38 @@
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
-# import ccxt 
-# import pprint
-# import time
-# import datetime
-# import pandas as pd
-# import binance
+import ccxt 
+import pprint
+import time
+import datetime
+import pandas as pd
+from pandas_datareader import data
 
-# import math
+# from pandas import Series, DataFrame
+import binance
 
-# from pandas.core.tools.datetimes import to_datetime
+import math
 
-
-# mystock = ['kakao','naver']
-
-# print(mystock[0],mystock[1])
+from pandas.core.tools.datetimes import to_datetime
 
 
 
 
 
-import xlsxwriter
 
 
-# Create an new Excel file and add a worksheet.
-workbook = xlsxwriter.Workbook('demo.xlsx')
-worksheet = workbook.add_worksheet()
 
-# Widen the first column to make the text clearer.
-worksheet.set_column('A:A', 20)
 
-# Add a bold format to use to highlight cells.
-bold = workbook.add_format({'bold': True})
 
-# Write some simple text.
-worksheet.write('A1', 'Hello')
 
-# Text with formatting.
-worksheet.write('A2', 'World', bold)
 
-# Write some numbers, with row/column notation.
-worksheet.write(2, 0, 123)
-worksheet.write(3, 0, 123.456)
+# raw_data = {'col0': [1,2,3,4],
+#             'col1' : [10,20,30,40], 
+#             'col2' : [100,200,300,400]}
 
-# # Insert an image.
-# worksheet.insert_image('B5', 'logo.png')
 
-workbook.close()
-
+# data = DataFrame(raw_data)
+# print(data)
 
 
 # dfsym= pd.DataFrame(columns=['symbol','leverage','period', 'portion', 'type','maxcount','maxsoldtime', 'amount', 'high','low', 'count','soldtime','rehistodf' ],index= [1,2,3,4])
